@@ -1,0 +1,20 @@
+{
+  "presets": [
+    "es2015",
+    "stage-0"
+  ],
+  "plugins": [
+    [
+      "babel-plugin-transform-builtin-extend",
+      {
+        "globals": [
+          "Error",
+          "Array"
+        ]
+      }
+    ],
+    "add-module-exports",
+    "transform-runtime"
+  ],
+  "sourceMaps": "both"
+}
