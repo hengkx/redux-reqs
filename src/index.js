@@ -32,14 +32,12 @@ export default (actions, opts = {}) => {
     try {
       yield put(beginTask());
 
-      if (meta.method === 'put') {
-        const keys = [];
-        const omitKeys = [];
-        pathToRegexp(url, keys);
-        keys.forEach(key => omitKeys.push(key.name));
-        const toPath = pathToRegexp.compile(url);
-        url = toPath(payload);
-      }
+      const keys = [];
+      const omitKeys = [];
+      pathToRegexp(url, keys);
+      keys.forEach(key => omitKeys.push(key.name));
+      const toPath = pathToRegexp.compile(url);
+      url = toPath(payload);
 
       const res = yield call(axios, url,
         { method: meta.method, data: omit(payload, omitKeys) });
