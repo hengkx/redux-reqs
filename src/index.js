@@ -4,6 +4,7 @@ import axios from 'axios';
 import { beginTask, endTask } from 'redux-nprogress';
 import camelCase from 'lodash.camelcase';
 import pathToRegexp from 'path-to-regexp';
+import omit from 'object.omit';
 
 export default (actions, opts = {}) => {
   const resultSufix = opts.resultSufix || '_RESULT';
@@ -32,11 +33,16 @@ export default (actions, opts = {}) => {
       yield put(beginTask());
 
       if (meta.method === 'put') {
+        const keys = [];
+        const omitKeys = [];
+        pathToRegexp(url, keys);
+        keys.forEach(key => omitKeys.push(key.name));
         const toPath = pathToRegexp.compile(url);
         url = toPath(payload);
       }
 
-      const res = yield call(axios, url, { method: meta.method, data: payload });
+      const res = yield call(axios, url,
+        { method: meta.method, data: omit(payload, omitKeys) });
 
       yield put(actionResult(res));
     } catch (error) {

@@ -1,6 +1,6 @@
 {
   "name": "redux-reqs",
-  "version": "0.1.1",
+  "version": "0.2.2",
   "description": "redux-reqs",
   "main": "lib/index",
   "scripts": {
@@ -24,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "lodash.camelcase": "^4.3.0",
+    "object.omit": "^2.0.1",
     "path-to-regexp": "^1.7.0",
     "redux-actions": "^2.0.3",
     "redux-nprogress": "^0.1.3"
