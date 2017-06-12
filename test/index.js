@@ -1,6 +1,6 @@
 import should from 'should';
 import { expect } from 'chai';
-import Req from '../src/req';
+import Req from '../src';
 
 describe('module', () => {
   it('should expose Req', () => {
