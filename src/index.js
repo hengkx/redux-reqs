@@ -38,6 +38,10 @@ export default (actionsDeprecated, options) => {
         'Expected type, url to be a string'
       );
       actions.push({ method, prefixType: `${opts.prefix}${type}`, type, url });
+
+      req.actionCreators = req.getCreateActions();
+      req.handleActions = req.getReducers();
+      req.watchSagas = req.getWatchSagas();
       return req;
     };
   });
@@ -62,7 +66,6 @@ export default (actionsDeprecated, options) => {
     return actionCreators;
   }
 
-  req.actionCreators = req.getCreateActions();
   req.getReducers = () => {
     const reducers = {};
     actions.forEach(item => {
@@ -79,7 +82,7 @@ export default (actionsDeprecated, options) => {
     });
     return handleActions(reducers, opts.defaultState || {});
   }
-  req.handleActions = req.getReducers();
+
 
   function* request(data) {
     const { type, payload, meta } = data;
@@ -113,7 +116,6 @@ export default (actionsDeprecated, options) => {
   req.getWatchSagas = () => {
     return actions.map(action => takeEvery(action.prefixType, request));
   }
-  req.watchSagas = req.getWatchSagas();
   return req;
 }
 
