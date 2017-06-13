@@ -40,6 +40,7 @@ describe('req', () => {
     req.get('UPDATE', 'url');
     const actionCreators = req.getCreateActions();
     const action = actionCreators['update']({ test: 'aaa' });
+    Req.defaultConfig.b = 2;
     expect(action)
       .to.deep.equal({
         meta: {
@@ -55,6 +56,7 @@ describe('req', () => {
 
   it('normal get action with meta', () => {
     const req = new Req({ prefix: 'student' });
+    console.log(Req.defaultConfig);
     req.get('UPDATE', 'url');
     const actionCreators = req.getCreateActions();
     const action = actionCreators['update']({ test: 'aaa' }, { meta: '2' });
