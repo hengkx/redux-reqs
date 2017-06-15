@@ -16,7 +16,7 @@ ReduxReqs.defaults = {
   request:function* request() {
     // custom request
   },
-  processResult: function() {
+  processResult: function(result) {
     // request result process,If exists request will disabled.
   }
 };
