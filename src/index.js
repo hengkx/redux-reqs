@@ -5,122 +5,99 @@ import isArray from 'lodash/isArray';
 import { createAction, handleActions } from 'redux-actions';
 import { call, put, takeEvery } from 'redux-saga/effects';
 import axios from 'axios';
-import { beginTask, endTask } from 'redux-nprogress';
-import pathToRegexp from 'path-to-regexp';
-import omit from 'object.omit';
+// import { beginTask, endTask } from 'redux-nprogress';
+// import pathToRegexp from 'path-to-regexp';
+// import omit from 'object.omit';
+import request from './request';
+import defaults from './defaults';
 
 
 const methods = ['get', 'put', 'post', 'patch', 'delete'];
 
 class Req {
-  static defaultConfig = { a: 1 }
   constructor(actionsDeprecated, options) {
-    const actions = [];
-    let opts = options || {};
+    this.actions = [];
+    this.opts = options || {};
     // To be compatible with the previous version of 0.3.0
     if (isArray(actionsDeprecated)) {
       actionsDeprecated.forEach(action => { action.prefixType = action.type; });
       actions.push(...actionsDeprecated);
       console.error('Warning: actions param deprecated,We will be removed in later versions');
     } else {
-      opts = actionsDeprecated || {};
+      this.opts = actionsDeprecated || {};
     }
+    this.opts.prefixUrl = this.opts.prefixUrl || '';
+    this.opts.defaultUrl = this.opts.defaultUrl || '';
 
-    const resultSufix = opts.resultSufix || '_RESULT';
-    if (opts.prefix) {
-      opts.prefix = `${opts.prefix.toUpperCase()}_`;
+    this.resultSufix = this.opts.resultSufix || '_RESULT';
+    if (this.opts.prefix) {
+      this.opts.prefix = `${this.opts.prefix.toUpperCase()}_`;
     }
-
-    const req = {};
-
-    methods.forEach((method) => {
-      req[method] = (type, url) => {
-        invariant(
-          isString(type) && isString(url),
-          'Expected type, url to be a string'
-        );
-        console.log(Req.defaultConfig);
-        actions.push({ method, prefixType: `${opts.prefix}${type}`, type, url });
-
-        req.actionCreators = req.getCreateActions();
-        req.handleActions = req.getReducers();
-        req.watchSagas = req.getWatchSagas();
-        return req;
-      };
-    });
-    // Alias for `router.delete()` because delete is a reserved word
-    req.del = req['delete'];
-
-    function metaCreator(url, method = 'get') {
-      return (_, meta) => ({
-        url,
-        method,
-        ...meta
-      });
-    }
-
-    req.getCreateActions = () => {
-      const actionCreators = {};
-      actions.forEach(action => {
-        actionCreators[camelCase(action.type)] =
-          createAction(action.prefixType, null,
-            metaCreator(action.url, action.method));
-      });
-      return actionCreators;
-    }
-
-    req.getReducers = () => {
-      const reducers = {};
-      actions.forEach(item => {
-        const { prefixType, type } = item;
-        reducers[prefixType] = (state) => ({
-          ...state,
-          isfetching: true
-        });
-        reducers[`${prefixType}${resultSufix}`] = (state, action) => ({
-          ...state,
-          isfetching: false,
-          [camelCase(`${type}${resultSufix}`)]: action.payload
-        });
-      });
-      return handleActions(reducers, opts.defaultState || {});
-    }
-
-
-    function* request(data) {
-      const { type, payload, meta } = data;
-      let url = meta.url;
-      const actionResult = createAction(`${type}_RESULT`);
-      try {
-        yield put(beginTask());
-
-        const keys = [];
-        const omitKeys = [];
-        pathToRegexp(url, keys);
-        keys.forEach(key => omitKeys.push(key.name));
-        const toPath = pathToRegexp.compile(url);
-        url = toPath(payload);
-        let axiosConfig = { method: meta.method };
-        if (meta.method === 'get') {
-          axiosConfig.params = omit(payload, omitKeys);
-        } else {
-          axiosConfig.data = omit(payload, omitKeys);
-        }
-        const res = yield call(axios, url, axiosConfig);
-
-        yield put(actionResult(res));
-      } catch (error) {
-        yield put(actionResult(error));
-      } finally {
-        yield put(endTask());
-      }
-    }
-
-    req.getWatchSagas = () => {
-      return actions.map(action => takeEvery(action.prefixType, request));
-    }
-    return req;
   }
+
+  metaCreator = (url, method = 'get') => {
+    return (_, meta) => ({
+      url,
+      method,
+      ...meta
+    });
+  }
+
+  getCreateActions = () => {
+    const actionCreators = {};
+    this.actions.forEach(action => {
+      actionCreators[camelCase(action.type)] =
+        createAction(action.prefixType, null,
+          this.metaCreator(action.url, action.method));
+    });
+    return actionCreators;
+  }
+
+  getReducers = () => {
+    const reducers = {};
+    this.actions.forEach(item => {
+      const { prefixType, type } = item;
+      reducers[prefixType] = (state) => ({
+        ...state,
+        isfetching: true
+      });
+      reducers[`${prefixType}${this.resultSufix}`] = (state, action) => ({
+        ...state,
+        isfetching: false,
+        [camelCase(`${type}${this.resultSufix}`)]: action.payload
+      });
+    });
+    return handleActions(reducers, this.opts.defaultState || {});
+  }
+
+  request = request;
+  getWatchSagas = () => {
+    return this.actions.map(action => takeEvery(action.prefixType, function* (data) {
+      yield request(data, { ...action.config, ...Req.defaults });
+    }));
+  }
+
+  // use = () => {
+
+  // }
 }
+
+
+methods.forEach((method) => {
+  Req.prototype[method] = function (type, url, config = {}) {
+    invariant(isString(type), 'Expected type to be a string');
+    const { prefixUrl, defaultUrl } = this.opts;
+    this.actions.push({ method, prefixType: `${this.opts.prefix}${type}`, type, url: url || `${prefixUrl}${defaultUrl}`, config });
+    this.actionCreators = this.getCreateActions();
+    this.handleActions = this.getReducers();
+    this.watchSagas = this.getWatchSagas();
+    return this;
+  };
+});
+// Alias for `router.delete()` because delete is a reserved word
+Req.prototype.del = Req.prototype['delete'];
+
+Req.defaults = defaults;
+Req.axios = axios;
 
 export default Req;

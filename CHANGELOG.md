@@ -1,3 +1,7 @@
+# 0.4.0(2017-06-15)
+### Features
+* add **defaults** config
+
 # 0.3.0(2017-06-13)
 ### Features
 * add get,put,del,patch,post methods

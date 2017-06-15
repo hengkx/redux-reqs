@@ -3,20 +3,44 @@
 [![NPM version](https://img.shields.io/npm/v/redux-reqs.svg?style=flat)](https://npmjs.org/package/redux-reqs)
 [![NPM downloads](http://img.shields.io/npm/dm/redux-reqs.svg?style=flat)](https://npmjs.org/package/redux-reqs)
 
+
+### defaults config
+
+``` javascript
+import ReduxReqs from 'redux-reqs';
+import { beginTask, endTask } from 'redux-nprogress';
+
+ReduxReqs.defaults = {
+  beforeAction: beginTask(),
+  afterAction: endTask(),
+  request:function* request() {
+    // custom request
+  },
+  processResult: function() {
+    // request result process,If exists request will disabled.
+  }
+};
+```
+
 ``` javascript
 import ReduxReqs from 'redux-reqs';
 
-const reduxReqs = new ReduxReqs();
+const reduxReqs = new ReduxReqs(
+  {
+    prefix:'STU', // action type prefix,
+    prefixUrl:'/api',
+    defaultUrl:'/stu/:id'
+  }
+);
 
 reduxReqs
-  .get('getUrlGroupByProject', Api.ProjectUrlGroup)
-  .post('Add', Api.ProjectUrlGroup)
+  .get('GET', Api.ProjectUrlGroup, config)
+  .post('ADD', Api.ProjectUrlGroup)
   .put('UPDATE', Api.UrlGroupOper)
-  .del('DELETE_URL_GROUP', Api.ProjectUrlGroup)
-  .put('UPDATE_URL', Api.EditUrl);
+  .del('DELETE_URL_GROUP', Api.ProjectUrlGroup);
 
 export const { update, updateUrl, add, deleteUrlGroup,
-  getUrlGroupByProject } = reduxReqs.getCreateActions();
+  get } = reduxReqs.getCreateActions();
 
 export default reduxReqs.getReducers();
 
