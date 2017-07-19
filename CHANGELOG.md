@@ -1,3 +1,7 @@
+# 0.4.2(2017-07-19)
+### Bug Fixs
+* prefix url invalid
+
 # 0.4.1(2017-07-19)
 ### Bug Fixs
 * url with port is not requested 

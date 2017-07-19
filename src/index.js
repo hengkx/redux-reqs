@@ -91,7 +91,8 @@ class Req {
     const { prefixUrl, defaultUrl } = this.opts;
     if (url && (url.indexOf('http://') !== -1 || url.indexOf('https://') !== -1)) return url;
     if (url) return `${prefixUrl}${url}`;
-    return defaultUrl;
+    if(defaultUrl) return defaultUrl;
+    return prefixUrl;
   }
   // use = () => {
 
