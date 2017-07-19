@@ -13,7 +13,8 @@ import { beginTask, endTask } from 'redux-nprogress';
 ReduxReqs.defaults = {
   beforeAction: beginTask(),
   afterAction: endTask(),
-  request:function* request() {
+  defaultState: {},
+  request:function* request(data) {
     // custom request
   },
   processResult: function(result) {
