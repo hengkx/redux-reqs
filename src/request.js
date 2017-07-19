@@ -36,6 +36,9 @@ function* request(data, config) {
       }
     }
   } catch (error) {
+    console.log(data);
+    console.log('error');
+    console.log(error);
     yield put(actionResult(error));
   } finally {
     if (config.afterAction) yield put(config.afterAction);
