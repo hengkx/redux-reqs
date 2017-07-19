@@ -5,23 +5,27 @@ import axios from 'axios';
 import pathToRegexp from 'path-to-regexp';
 import omit from 'object.omit';
 
-function* request(data, config) {
-
+function* request(data, config = {}) {
   const { type, payload, meta } = data;
   let url = meta.url;
   const actionResult = createAction(`${type}_RESULT`);
   try {
     if (config.beforeAction) yield put(config.beforeAction);
     if (config.request && isFunction(config.request)) {
-      const res = yield call(config.request);
+      const res = yield call(config.request, data);
       yield put(actionResult(res));
     } else {
       const keys = [];
       const omitKeys = [];
-      pathToRegexp(url, keys);
-      keys.forEach(key => omitKeys.push(key.name));
-      const toPath = pathToRegexp.compile(url);
-      url = toPath(payload);
+      try {
+        pathToRegexp(url, keys);
+        keys.forEach(key => omitKeys.push(key.name));
+        const toPath = pathToRegexp.compile(url);
+        url = toPath(payload);
+      } catch (error) {
+        console.error('url path-to-regexp throw');
+      }
+
       let axiosConfig = { method: meta.method };
       if (meta.method === 'get') {
         axiosConfig.params = omit(payload, omitKeys);
@@ -36,9 +40,9 @@ function* request(data, config) {
       }
     }
   } catch (error) {
-    console.log(data);
-    console.log('error');
-    console.log(error);
+    // console.log(data);
+    // console.log('error');
+    // console.log(error);
     yield put(actionResult(error));
   } finally {
     if (config.afterAction) yield put(config.afterAction);

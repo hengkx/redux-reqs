@@ -32,7 +32,13 @@ class Req {
     this.resultSufix = this.opts.resultSufix || '_RESULT';
     if (this.opts.prefix) {
       this.opts.prefix = `${this.opts.prefix.toUpperCase()}_`;
+    } else {
+      this.opts.prefix = '';
     }
+
+    this.actionCreators = {};
+    this.handleActions = [];
+    this.watchSagas = [];
   }
 
   metaCreator = (url, method = 'get') => {
@@ -42,6 +48,9 @@ class Req {
       ...meta
     });
   }
+
+  getCreateAction = (action) =>
+    (createAction(action.prefixType, null, this.metaCreator(action.url, action.method)));
 
   getCreateActions = () => {
     const actionCreators = {};
@@ -71,26 +80,36 @@ class Req {
   }
 
   request = request;
-  getWatchSagas = () => {
-    return this.actions.map(action => takeEvery(action.prefixType, function* (data) {
-      yield request(data, { ...action.config, ...Req.defaults });
-    }));
-  }
 
+  getWatchSaga = (action) => (takeEvery(action.prefixType, function* (data) {
+    yield request(data, { ...action.config, ...Req.defaults });
+  }))
+
+  getWatchSagas = () => (this.actions.map(action => this.getWatchSaga(action)))
+
+  getUrl = (url) => {
+    const { prefixUrl, defaultUrl } = this.opts;
+    if (url && (url.indexOf('http://') !== -1 || url.indexOf('https://') !== -1)) return url;
+    if (url) return `${prefixUrl}${url}`;
+    return defaultUrl;
+  }
   // use = () => {
 
   // }
 }
 
 
+
 methods.forEach((method) => {
   Req.prototype[method] = function (type, url, config = {}) {
     invariant(isString(type), 'Expected type to be a string');
     const { prefixUrl, defaultUrl } = this.opts;
-    this.actions.push({ method, prefixType: `${this.opts.prefix}${type}`, type, url: url || `${prefixUrl}${defaultUrl}`, config });
-    this.actionCreators = this.getCreateActions();
+    const action = { method, prefixType: `${this.opts.prefix}${type}`, type, url: this.getUrl(url), config };
+    this.actions.push(action);
+
+    this.actionCreators[camelCase(type)] = this.getCreateAction(action);
     this.handleActions = this.getReducers();
-    this.watchSagas = this.getWatchSagas();
+    this.watchSagas.push(this.getWatchSaga(action));
     return this;
   };
 });

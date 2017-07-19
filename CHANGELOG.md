@@ -1,3 +1,7 @@
+# 0.4.1(2017-07-19)
+### Bug Fixs
+* url with port is not requested 
+
 # 0.4.0(2017-06-15)
 ### Features
 * add **defaults** config
