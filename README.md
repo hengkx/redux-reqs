@@ -2,7 +2,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/redux-reqs.svg?style=flat)](https://npmjs.org/package/redux-reqs)
 [![NPM downloads](http://img.shields.io/npm/dm/redux-reqs.svg?style=flat)](https://npmjs.org/package/redux-reqs)
-
+[![Build Status](https://travis-ci.org/hengkx/redux-reqs.svg?branch=master)](https://travis-ci.org/hengkx/redux-reqs)
 
 ### defaults config
 
