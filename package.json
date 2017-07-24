@@ -5,6 +5,7 @@
   "main": "lib/index",
   "scripts": {
     "watch": "babel --watch=./src --out-dir=./lib --source-maps inline --copy-files",
+    "build": "babel ./src --out-dir=./lib --source-maps inline --copy-files",
     "test": "mocha --compilers js:babel-core/register"
   },
   "repository": {
